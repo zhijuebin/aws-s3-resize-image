@@ -5,47 +5,60 @@ require 'vendor/autoload.php';
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 
-$bucketName='images.littlehi.com';
+$bucketName='forum-images-test';
 
 $notFoundImg='404.jpg';
 
 $src=$_GET['src'];
 
-if(preg_match("/^(.*)_(\d+)x(\d+).([a-z]+)$/",$src,$matches)){
+if(preg_match("/^(.*)_(\d+)x(\d+)x(.*)\.([a-z]+)$/",$src,$matches)){
 
-$objectName=$matches[1].'.'.$matches[4];
-$width=$matches[2];
-$height=$matches[3];
+    $objectName=$matches[1].'.'.$matches[5];
+    $width=$matches[2];
+    $height=$matches[3];
+    $dirfill=$matches[4];
 
+    if(preg_match("/^(.*)\/(.*)$/",$matches[1],$mat)){
+        $prefix=$mat[1];
+        $putkey=$prefix.'/'.$dirfill.'/'.$mat[2].'.'.$matches[5];
+    }else{
+        $putkey=$dirfill.'/'.$matches[1].'.'.$matches[5];
+    }
 
-$client = new S3Client([ 'region' => 'cn-north-1', 'version' => 'latest']);
-$client->registerStreamWrapper();
+    print($putkey);
 
-try{
-  $imagick = new \Imagick('s3://'.$bucketName.'/'.$objectName);
-}
-catch (Exception $e) {
-  $imagick= new \Imagick($notFoundImg);
-}
+    $client = new S3Client([ 'region' => 'us-west-2', 'version' => 'latest',
+        'credentials' => [
+            'key' => 'xxx',
+            'secret' => 'xxx'
+        ] ]);
+    $client->registerStreamWrapper();
 
-if($imagick){
-  $contentType=$imagick->getImageMimeType();
+    try{
+        $imagick = new \Imagick('s3://'.$bucketName.'/'.$objectName);
+    }
+    catch (Exception $e) {
+        $imagick= new \Imagick($notFoundImg);
+    }
 
-  $imagick->scaleImage($width,$height);
+    if($imagick){
+        $contentType=$imagick->getImageMimeType();
 
-  header("Content-type: ".$contentType);
-  echo $imagick->getImageBlob();
+        $imagick->scaleImage($width,$height);
 
-  $client->putObject([
-    'ContentType' => '$contentType',
-    'Body' =>$imagick->getImageBlob(),
-    'Bucket' => $bucketName,
-    'Key' => $src,
-    'StorageClass' => 'REDUCED_REDUNDANCY',
-    'Tagging' => 'thumbnail=yes'
-  ]);
-  die();
-}
+        header("Content-type: ".$contentType);
+        echo $imagick->getImageBlob();
+
+        $client->putObject([
+            'ContentType' => '$contentType',
+            'Body' =>$imagick->getImageBlob(),
+            'Bucket' => $bucketName,
+            'Key' => $putkey,
+            'StorageClass' => 'REDUCED_REDUNDANCY',
+            'Tagging' => 'thumbnail=yes'
+        ]);
+        die();
+    }
 
 
 
