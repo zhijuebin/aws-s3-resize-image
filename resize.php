@@ -11,21 +11,13 @@ $notFoundImg='404.jpg';
 
 $src=$_GET['src'];
 
-if(preg_match("/^(.*)_(\d+)x(\d+)x(.*)\.([a-z]+)$/",$src,$matches)){
+if(preg_match("/^(.*)_w(\d+)h(\d+).([a-z]+)$/",$src,$matches)) {
 
-    $objectName=$matches[1].'.'.$matches[5];
+    $objectName=$matches[1].'.'.$matches[4];
     $width=$matches[2];
     $height=$matches[3];
-    $dirfill=$matches[4];
 
-    if(preg_match("/^(.*)\/(.*)$/",$matches[1],$mat)){
-        $prefix=$mat[1];
-        $putkey=$prefix.'/'.$dirfill.'/'.$mat[2].'.'.$matches[5];
-    }else{
-        $putkey=$dirfill.'/'.$matches[1].'.'.$matches[5];
-    }
-
-    print($putkey);
+    $putkey=$matches[1].'_'.'w'.$width.$matches[4];
 
     $client = new S3Client([ 'region' => 'us-west-2', 'version' => 'latest',
         'credentials' => [
