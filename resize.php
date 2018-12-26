@@ -17,7 +17,7 @@ if(preg_match("/^(.*)_w(\d+)h(\d+).([a-z]+)$/",$src,$matches)) {
     $width=$matches[2];
     $height=$matches[3];
 
-    $putkey=$matches[1].'_'.'w'.$width.$matches[4];
+    $putkey=$matches[1].'_'.'w'.$width.'.'.$matches[4];
 
     $client = new S3Client([ 'region' => 'us-west-2', 'version' => 'latest',
         'credentials' => [
