@@ -11,13 +11,27 @@ $notFoundImg='404.jpg';
 
 $src=$_GET['src'];
 
-if(preg_match("/^(.*)_w(\d+)h(\d+).([a-z]+)$/",$src,$matches)) {
-
-    $objectName=$matches[1].'.'.$matches[4];
-    $width=$matches[2];
-    $height=$matches[3];
-
-    $putkey=$matches[1].'_'.'w'.$width.'.'.$matches[4];
+if(preg_match("/^(.*)_w(\d+)h(\d+).([a-z]+)$/",$src) || preg_match("/^(.*)_w(\d+).([a-z]+)$/", $src) || preg_match("/^(.*)_h(\d+).([a-z]+)$/", $src)) {
+    if (preg_match("/^(.*)_w(\d+)h(\d+).([a-z]+)$/",$src, $matches)) {
+        $objectName=$matches[1].'.'.$matches[4];
+        $width=$matches[2];
+        $height=$matches[3];
+        $type=$matches[4];
+        $originName=$matches[1];
+    } elseif (preg_match("/^(.*)_w(\d+).([a-z]+)$/", $src, $matches)) {
+        $objectName=$matches[1].'.'.$matches[3];
+        $width=$matches[2];
+        $height=null;
+        $type=$matches[3];
+        $originName=$matches[1];
+    } else {
+        preg_match("/^(.*)_h(\d+).([a-z]+)$/", $src, $matches);
+        $objectName=$matches[1].'.'.$matches[3];
+        $width=null;
+        $height=$matches[2];
+        $type=$matches[3];
+        $originName=$matches[1];
+    }
 
     $client = new S3Client([ 'region' => 'us-west-2', 'version' => 'latest',
         'credentials' => [
@@ -39,6 +53,17 @@ if(preg_match("/^(.*)_w(\d+)h(\d+).([a-z]+)$/",$src,$matches)) {
 
     if($imagick){
         $contentType=$imagick->getImageMimeType();
+        $originWidth=$imagick->getImageWidth();
+        $originHeight=$imagick->getImageHeight();
+        if ($width == null) {
+            $width=intval(round(($originWidth / $originHeight) * $height));
+            $putkey=$originName.'_'.'h'.$height.'.'.$type;
+        } elseif ($height == null) {
+            $height=intval(round(($originHeight / $originWidth) * $width));
+            $putkey=$originName.'_'.'w'.$width.'.'.$type;
+        } else {
+            $putkey=$originName.'_'.'w'.$width.'h'.$height.'.'.$type;
+        }
 
         $imagick->scaleImage($width,$height);
 
