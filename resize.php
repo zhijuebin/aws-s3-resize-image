@@ -30,7 +30,11 @@ if(preg_match("/^(.*)_w(\d+)h(\d+).([a-z]+)$/",$src,$matches)) {
         $imagick = new \Imagick('s3://'.$bucketName.'/'.$objectName);
     }
     catch (Exception $e) {
-        $imagick= new \Imagick($notFoundImg);
+        header('HTTP/1.1 404 Not Found');
+        header("status:404 Not Found");
+        header("Content-type: image/jpeg");
+        echo file_get_contents($notFoundImg);
+        die();
     }
 
     if($imagick){
@@ -56,5 +60,7 @@ if(preg_match("/^(.*)_w(\d+)h(\d+).([a-z]+)$/",$src,$matches)) {
 
 }
 
+header('HTTP/1.1 404 Not Found');
+header("status:404 Not Found");
 header("Content-type: image/jpeg");
 echo file_get_contents($notFoundImg);
