@@ -2,10 +2,15 @@
 date_default_timezone_set('Asia/shanghai');
 require 'vendor/autoload.php';
 
+
+$aws_config=require('config.php');
+$key=$aws_config['aws_key'];
+$secret=$aws_config['aws_secret'];
+$bucketName=$aws_config['aws_bucket'];
+$region=$aws_config['aws_region'];
+
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
-
-$bucketName='forum-images-test';
 
 $notFoundImg='404.jpg';
 
@@ -33,10 +38,10 @@ if(preg_match("/^(.*)_w(\d+)h(\d+).([a-z]+)$/",$src) || preg_match("/^(.*)_w(\d+
         $originName=$matches[1];
     }
 
-    $client = new S3Client([ 'region' => 'us-west-2', 'version' => 'latest',
+    $client = new S3Client([ 'region' => $region, 'version' => 'latest',
         'credentials' => [
-            'key' => 'xxx',
-            'secret' => 'xxx'
+            'key' => $key,
+            'secret' => $secret
         ] ]);
     $client->registerStreamWrapper();
 
