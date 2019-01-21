@@ -3,7 +3,7 @@ date_default_timezone_set('Asia/shanghai');
 require 'vendor/autoload.php';
 
 
-$aws_config=require('config.php');
+$aws_config= require('aws_config/config.php');
 $key=$aws_config['aws_key'];
 $secret=$aws_config['aws_secret'];
 $bucketName=$aws_config['aws_bucket'];
